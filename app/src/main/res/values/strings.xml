@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">OneStopShop</string>
+    <string name="data_url">https://gist.githubusercontent.com/helloandrewpark/0a407d7c681b833d6b49/raw/5f3936dd524d32ed03953f616e19740bba920bcd/gistfile1.js</string>
+    <string name="title_activity_cards">CardsActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+</resources>
