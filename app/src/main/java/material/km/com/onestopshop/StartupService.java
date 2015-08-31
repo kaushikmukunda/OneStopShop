@@ -57,7 +57,7 @@ public class StartupService extends IntentService implements GoogleApiClient.Con
 
     private void fetchData() {
         Log.d(TAG, "init data fetch");
-        new FetchContent().execute(getString(R.string.data_url));
+        new FetchContent(getString(R.string.data_url)).run();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class StartupService extends IntentService implements GoogleApiClient.Con
                 mLocationApiClient,
                 locationRequest,
                 this
-                );
+            );
         }
     }
 
@@ -121,26 +121,23 @@ public class StartupService extends IntentService implements GoogleApiClient.Con
         }
     }
 
-    public class FetchContent extends AsyncTask<String, Void, String> {
+    public class FetchContent implements Runnable  {
+        String url;
+
+        public FetchContent(String url) {
+            this.url = url;
+        }
+
         @Override
-        protected String doInBackground(String... url) {
-            String data = "{}";
+        public void run() {
+            mData = "{}";
             try {
-                data = mDataFetch.getDataFromUrl(url[0]);
+                mData = mDataFetch.getDataFromUrl(url);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (NetworkErrorException e) {
                 e.printStackTrace();
             }
-            return data;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.d(TAG, "Data fetched");
-            mData = s;
-            reportResult();
         }
     }
 
