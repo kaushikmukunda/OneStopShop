@@ -25,13 +25,20 @@ public class SplashActivity extends Activity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_splash);
 
+        mCompletionRx = new InitCompleteRx();
         startService(StartupService.getIntent(this));
-        setupBroadcastReceiver();
     }
 
-    private void setupBroadcastReceiver() {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mCompletionRx);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         IntentFilter filter = new IntentFilter(InitCompleteRx.ACTION);
-        mCompletionRx = new InitCompleteRx();
         registerReceiver(mCompletionRx, filter);
     }
 
@@ -51,7 +58,6 @@ public class SplashActivity extends Activity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("DBG", "got broadcast Listener");
             String data = intent.getStringExtra(DATA);
             Location location = intent.getParcelableExtra(LOCATION);
             startCardsActivity(data, location);

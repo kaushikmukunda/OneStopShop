@@ -5,6 +5,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.picasso.Downloader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,50 +19,25 @@ import java.net.URL;
 
 public class DataFetch {
     private ConnectivityManager mConnectivityManager;
+    OkHttpClient mClient;
 
     public DataFetch(ConnectivityManager connectivityManager) {
         mConnectivityManager = connectivityManager;
+        mClient = new OkHttpClient();
     }
 
     public String getDataFromUrl(String dataUrl) throws IOException, NetworkErrorException {
-        StringBuilder json = new StringBuilder();
-        InputStream is = null;
-
         if (!hasValidConnection()) {
             Log.w("DBG", "No connection available");
             throw new NetworkErrorException();
         }
 
-        try {
-            URL url = new URL(dataUrl);
-            // Setup Connection
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.addRequestProperty("charset", "utf-8");
-            conn.addRequestProperty("content-type", "application/json");
-            conn.setReadTimeout(1000 /* milliseconds */);
-            conn.setConnectTimeout(1500 /* milliseconds */);
-            conn.setRequestMethod("GET");
-            conn.setDoInput(true);
-            conn.connect();
+        Request request = new Request.Builder()
+            .url(dataUrl)
+            .build();
 
-            // Parse if valid response is obtained
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                is = conn.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    json.append(line);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-
-        return json.toString();
+        Response response = mClient.newCall(request).execute();
+        return response.body().string();
     }
 
     private boolean hasValidConnection() {
