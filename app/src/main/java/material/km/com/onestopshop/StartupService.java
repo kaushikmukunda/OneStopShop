@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.net.ConnectivityManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -17,8 +16,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
-
-import static material.km.com.onestopshop.SplashActivity.*;
 
 public class StartupService extends IntentService implements GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -40,8 +37,12 @@ public class StartupService extends IntentService implements GoogleApiClient.Con
     @Override
     protected void onHandleIntent(Intent intent) {
         mDataFetch = new DataFetch((ConnectivityManager) this.getSystemService(CONNECTIVITY_SERVICE));
-        fetchData();
-        fetchLocation();
+        if (mDataFetch.hasValidConnection()) {
+            fetchData();
+            fetchLocation();
+        } else {
+            reportError("No internet connection present, try again later");
+        }
     }
 
     private void fetchLocation() {
@@ -121,6 +122,14 @@ public class StartupService extends IntentService implements GoogleApiClient.Con
         }
     }
 
+    private void reportError(String error) {
+        Intent response = new Intent();
+        response.setAction(SplashActivity.InitCompleteRx.ACTION);
+        response.putExtra(SplashActivity.InitCompleteRx.ERROR, error);
+        sendBroadcast(response);
+        stopSelf();
+    }
+
     public class FetchContent implements Runnable  {
         String url;
 
@@ -130,7 +139,7 @@ public class StartupService extends IntentService implements GoogleApiClient.Con
 
         @Override
         public void run() {
-            mData = "{}";
+            mData = "{\"cards\":[]}";
             try {
                 mData = mDataFetch.getDataFromUrl(url);
             } catch (IOException e) {

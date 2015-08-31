@@ -40,7 +40,7 @@ public class DataFetch {
         return response.body().string();
     }
 
-    private boolean hasValidConnection() {
+    public boolean hasValidConnection() {
         NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnected());
     }

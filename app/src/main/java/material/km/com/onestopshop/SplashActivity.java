@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,8 +23,6 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_splash);
 
         mCompletionRx = new InitCompleteRx();
@@ -51,16 +51,28 @@ public class SplashActivity extends Activity {
     }
 
 
+    private void showErrorMessage(String error) {
+        Snackbar.make(findViewById(R.id.splashLayout), error, Snackbar.LENGTH_LONG)
+            .show();
+    }
+
     public class InitCompleteRx extends BroadcastReceiver {
         public static final String ACTION = "material.km.com.onestopshop.FINISH_DATA_FETCH";
         public static final String LOCATION = "location";
         public static final String DATA = "data";
+        public static final String ERROR = "error";
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            String error = intent.getStringExtra(ERROR);
             String data = intent.getStringExtra(DATA);
             Location location = intent.getParcelableExtra(LOCATION);
-            startCardsActivity(data, location);
+
+            if (error == null) {
+                startCardsActivity(data, location);
+            } else {
+                showErrorMessage(error);
+            }
         }
     }
 }
